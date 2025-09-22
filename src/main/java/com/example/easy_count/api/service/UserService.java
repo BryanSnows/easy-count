@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,12 +48,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDto getById(Long id) {
+    public UserDto getById(UUID id) {
         return repository.findById(id).map(this::toDto)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
-    public UserDto update(Long id, UserCreateRequest req) {
+    public UserDto update(UUID id, UserCreateRequest req) {
         User user = repository.findById(id).orElseThrow(() -> new NoSuchElementException("User not found"));
 
         // If email/username changed, check uniqueness
@@ -75,7 +76,7 @@ public class UserService {
         return toDto(updated);
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!repository.existsById(id)) {
             throw new NoSuchElementException("User not found");
         }
@@ -91,4 +92,3 @@ public class UserService {
                 .build();
     }
 }
-

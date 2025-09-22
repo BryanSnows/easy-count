@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -24,8 +24,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> create(@Valid @RequestBody UserCreateRequest req) {
-        UserDto created = service.create(req);
-        return ResponseEntity.created(URI.create("/api/users/" + created.getId())).body(created);
+        return ResponseEntity.ok(service.create(req));
     }
 
     @GetMapping
@@ -34,19 +33,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> get(@PathVariable Long id) {
+    public ResponseEntity<UserDto> get(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> update(@PathVariable Long id, @Valid @RequestBody UserCreateRequest req) {
+    public ResponseEntity<UserDto> update(@PathVariable UUID id, @Valid @RequestBody UserCreateRequest req) {
         return ResponseEntity.ok(service.update(id, req));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
-

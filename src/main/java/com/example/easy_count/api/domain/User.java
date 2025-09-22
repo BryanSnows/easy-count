@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "users")
@@ -14,7 +15,9 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue()
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @Column(nullable = false, unique = true, length = 100)
@@ -34,4 +37,3 @@ public class User {
         this.createdAt = Instant.now();
     }
 }
-

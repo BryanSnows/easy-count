@@ -14,4 +14,3 @@ public class UserDto {
     private String email;
     private Instant createdAt;
 }
-
