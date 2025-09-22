@@ -55,6 +55,11 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version> <!-- versão atual em 2025 -->
+        </dependency>
 		<!-- Flyway for database migrations -->
 		<!-- Explicit Flyway version: upgrade to a version that supports PostgreSQL 16.x
 		     This overrides the Spring Boot managed version. If you prefer, upgrade

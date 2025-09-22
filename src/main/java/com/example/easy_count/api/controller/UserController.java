@@ -6,12 +6,14 @@ import com.example.easy_count.api.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "Users", description = "Gerenciamento de usuários")
 public class UserController {
 
     private final UserService service;
