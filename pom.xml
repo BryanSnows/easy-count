@@ -56,9 +56,14 @@
 			<optional>true</optional>
 		</dependency>
 		<!-- Flyway for database migrations -->
+		<!-- Explicit Flyway version: upgrade to a version that supports PostgreSQL 16.x
+		     This overrides the Spring Boot managed version. If you prefer, upgrade
+		     the Spring Boot parent instead to pick a newer managed Flyway.
+		-->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
+			<version>9.8.1</version>
 		</dependency>
 		<!-- Validation (jakarta validation) -->
 		<dependency>
