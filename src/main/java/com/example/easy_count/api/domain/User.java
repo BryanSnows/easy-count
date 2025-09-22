@@ -8,9 +8,9 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "users")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Data // Gera getters, setters, equals, hashCode e toString
+@NoArgsConstructor // Gera construtor vazio
+@AllArgsConstructor  // Gera construtor com todos os atributos
 @Builder
 public class User {
 

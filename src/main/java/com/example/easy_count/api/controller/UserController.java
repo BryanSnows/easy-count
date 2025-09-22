@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,13 +15,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "Users", description = "Gerenciamento de usuários")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService service;
-
-    public UserController(UserService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public ResponseEntity<UserDto> create(@Valid @RequestBody UserCreateRequest req) {
