@@ -1,79 +1,39 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
-# Creates the Postgres database 'easy-count' on localhost:5438 if it doesn't exist.
-# It uses Docker Compose's 'db' service and works even if psql is not installed on the host.
+# Script de inicialização do banco de dados PostgreSQL
+# Este script é executado durante a criação do container do PostgreSQL
 
-PROJECT_ROOT="$(cd "$(dirname "$0")"/.. && pwd)"
-COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
-SERVICE_NAME="db"
-CONTAINER_NAME="easy-count-db"
-DB_NAME="easy-count"
-DB_USER="postgres"
-DB_PASSWORD="pass123"
-DB_PORT_HOST=5438
+echo "Initializing database for environment: ${ENVIRONMENT:-development}"
 
-# Detect docker compose command
-if command -v docker >/dev/null 2>&1; then
-  if docker compose version >/dev/null 2>&1; then
-    DOCKER_COMPOSE="docker compose"
-  elif command -v docker-compose >/dev/null 2>&1; then
-    DOCKER_COMPOSE="docker-compose"
-  else
-    echo "ERROR: docker compose (v2) or docker-compose (v1) is required." >&2
-    exit 1
-  fi
-else
-  echo "ERROR: Docker is not installed or not in PATH." >&2
-  exit 1
-fi
+# Determinar o nome do banco de dados da aplicação
+APP_DB_NAME="${APP_DB_NAME:-${POSTGRES_DB:-easy_count}}"
 
-if [ ! -f "$COMPOSE_FILE" ]; then
-  echo "ERROR: docker-compose.yml not found at $COMPOSE_FILE" >&2
-  exit 1
-fi
+# Criar banco de dados se não existir (idempotente)
+echo "Creating database '${APP_DB_NAME}' if it doesn't exist..."
+psql -v ON_ERROR_STOP=1 -v DBNAME="${APP_DB_NAME}" --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
+    SELECT 'CREATE DATABASE ' || quote_ident(:'DBNAME')
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = :'DBNAME')\gexec
+EOSQL
 
-cd "$PROJECT_ROOT"
+echo "Database creation check completed. Proceeding with configuration..."
 
-# Ensure the DB service is up
-if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-  echo "Starting Postgres service '${SERVICE_NAME}'..."
-  $DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d "$SERVICE_NAME"
-else
-  echo "Postgres container '${CONTAINER_NAME}' already running."
-fi
+# Criar extensões e aplicar configurações (idempotente)
+psql -v ON_ERROR_STOP=1 -v DBNAME="${APP_DB_NAME}" --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    -- Criar extensões úteis para a aplicação (no template atual)
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
 
-# Wait for Postgres to become healthy/ready
-echo "Waiting for Postgres to become ready..."
-ATTEMPTS=0
-until docker exec "$CONTAINER_NAME" pg_isready -U "$DB_USER" >/dev/null 2>&1; do
-  ATTEMPTS=$((ATTEMPTS+1))
-  if [ $ATTEMPTS -gt 60 ]; then
-    echo "ERROR: Postgres did not become ready in time." >&2
-    exit 1
-  fi
-  sleep 2
-done
+    -- Configurações de performance
+    ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
+    ALTER SYSTEM SET log_statement = 'all';
+    ALTER SYSTEM SET log_min_duration_statement = 1000;
 
-echo "Postgres is ready. Checking for database '$DB_NAME'..."
+    -- Configurações de checkpoint
+    ALTER SYSTEM SET checkpoint_completion_target = 0.9;
+    ALTER SYSTEM SET wal_buffers = '16MB';
+    ALTER SYSTEM SET default_statistics_target = 100;
 
-# Use psql inside the container to avoid host dependency
-EXISTS=$(docker exec -e PGPASSWORD="$DB_PASSWORD" "$CONTAINER_NAME" \
-  psql -U "$DB_USER" -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}';" || echo "")
+    SELECT pg_reload_conf();
+EOSQL
 
-if [ "$EXISTS" = "1" ]; then
-  echo "Database '$DB_NAME' already exists. Nothing to do."
-else
-  echo "Creating database '$DB_NAME'..."
-  docker exec -e PGPASSWORD="$DB_PASSWORD" "$CONTAINER_NAME" \
-    psql -U "$DB_USER" -v ON_ERROR_STOP=1 -c "CREATE DATABASE \"${DB_NAME}\" OWNER \"${DB_USER}\";"
-  echo "Database '$DB_NAME' created successfully."
-fi
-
-# Optional connectivity check from host via mapped port
-echo "Verifying TCP connectivity on localhost:${DB_PORT_HOST}..."
-if nc -z localhost "$DB_PORT_HOST" 2>/dev/null; then
-  echo "Port ${DB_PORT_HOST} is reachable. Setup complete."
-else
-  echo "WARNING: Port ${DB_PORT_HOST} not reachable from host. Check Docker port mapping." >&2
-fi
+echo "Database initialization completed successfully!"
