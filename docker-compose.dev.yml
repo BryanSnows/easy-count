@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=pass123
       - POSTGRES_DB=postgres
       - ENVIRONMENT=dev
-      - APP_DB_NAME=easy_count_dev
+      - APP_DB_NAME=easy-count
     ports:
       - "5431:5432"
     volumes:
@@ -30,7 +30,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easy_count_dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easy-count
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=pass123
       - SPRING_FLYWAY_ENABLED=true

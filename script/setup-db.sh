@@ -7,7 +7,7 @@ set -eu
 echo "Initializing database for environment: ${ENVIRONMENT:-development}"
 
 # Determinar o nome do banco de dados da aplicação
-APP_DB_NAME="${APP_DB_NAME:-${POSTGRES_DB:-easy_count}}"
+APP_DB_NAME="${APP_DB_NAME:-${POSTGRES_DB:-easy-count}}"
 
 # Criar banco de dados se não existir (idempotente)
 echo "Creating database '${APP_DB_NAME}' if it doesn't exist..."
@@ -19,7 +19,7 @@ EOSQL
 echo "Database creation check completed. Proceeding with configuration..."
 
 # Criar extensões e aplicar configurações (idempotente)
-psql -v ON_ERROR_STOP=1 -v DBNAME="${APP_DB_NAME}" --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+psql -v ON_ERROR_STOP=1 -v DBNAME="${APP_DB_NAME}" --username "$POSTGRES_USER" --dbname "$APP_DB_NAME" <<-EOSQL
     -- Criar extensões úteis para a aplicação (no template atual)
     CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
 

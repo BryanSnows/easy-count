@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-prodpass123}
       - POSTGRES_DB=postgres
       - ENVIRONMENT=prod
-      - APP_DB_NAME=easy_count
+      - APP_DB_NAME=easy-count
     ports:
       - "5432:5432"
     volumes:
@@ -30,7 +30,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easy_count
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easy-count
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-prodpass123}
       - SPRING_FLYWAY_ENABLED=true
@@ -42,19 +42,5 @@ services:
 
 volumes:
   pgdata_prod:
-# Overrides para ambiente de desenvolvimento
-# Estas propriedades podem ser sobrescritas via variáveis de ambiente
 
-# Mostrar SQL em dev por padrão
-spring.jpa.show-sql=${SPRING_JPA_SHOW_SQL:true}
-# Não deixar o Hibernate criar/alterar schema (usamos Flyway)
-spring.jpa.hibernate.ddl-auto=${SPRING_JPA_HIBERNATE_DDL_AUTO:none}
-
-# Porta do servidor (pode ser sobrescrita via env SERVER_PORT)
-server.port=${SERVER_PORT:8080}
-
-# Logging mais verboso em dev
-logging.level.org.springframework.web=${LOG_LEVEL_SPRING_WEB:INFO}
-logging.level.org.hibernate.SQL=${LOG_LEVEL_HIBERNATE_SQL:DEBUG}
-logging.level.org.hibernate.orm.jdbc.bind=${LOG_LEVEL_HIBERNATE_BIND:TRACE}
 
